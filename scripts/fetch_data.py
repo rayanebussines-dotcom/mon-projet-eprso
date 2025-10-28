@@ -1,5 +1,7 @@
 # fetch_data.py
 import requests
+import os
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import json
 from datetime import datetime
 
