@@ -1,1 +1,39 @@
-Recréation du workflow à la bonne racine
+name: 🌊 Daily Data Fetch
+
+on:
+  # Exécuter l'action tous les jours à minuit UTC
+  schedule:
+    - cron: '0 0 * * *' 
+  # Permet de lancer l'action manuellement depuis l'interface GitHub
+  workflow_dispatch:
+
+jobs:
+  fetch_and-publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Cloner l'historique complet pour permettre la poussée
+          fetch-depth: 0 
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        # Nous avons besoin de 'requests' pour l'API HTTP
+        run: pip install requests 
+
+      - name: Run data fetching script
+        # Exécute notre script Python
+        run: python scripts/fetch_data.py
+        
+      - name: Commit and Push new data
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          # Publie le nouveau fichier GeoJSON (marine_data.geojson)
+          commit_message: '🤖 DECRET ROYAL: Mise à jour des données météo marine.'
+          files: 'data/marine_data.geojson'
