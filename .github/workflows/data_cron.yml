@@ -9,7 +9,7 @@ jobs:
   fetch_and_publish:
     runs-on: ubuntu-latest
     
-    # AJOUT ESSENTIEL POUR LE COMMIT :
+    # Permission essentielle pour le commit :
     permissions:
       contents: write
       
@@ -19,13 +19,19 @@ jobs:
         with:
           fetch-depth: 0 
 
-      - name: ⚡️ CRÉATION DU FICHIER (TEST BASH)
-        run: |
-          mkdir -p data 
-          echo '{"type": "FeatureCollection", "metadata": {"status": "SUCCES GARANTI"}, "features": []}' > data/marine_data.geojson
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: pip install requests 
+
+      - name: 🏃 EXÉCUTION DU SCRIPT PYTHON (Données réelles)
+        run: python scripts/fetch_data.py
         
       - name: Commit et Push des données
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: '🤖 DECRET ROYAL: SUCCES FINAL. Permission corrigée.'
+          commit_message: '🤖 DECRET ROYAL: Mise à jour des données météo marine.'
           file_pattern: 'data/marine_data.geojson'
