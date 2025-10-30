@@ -1,146 +1,68 @@
-// main.js - Le Cerveau du Projet EPRSO
+import requests
+import os
+import json
+from datetime import datetime
+import random # Ajout pour générer des données réalistes
 
-// La fonction asynchrone auto-exécutée (pour garantir le bon fonctionnement de 'await')
-(async function() {
+# --- FIX ESSENTIEL POUR LE CHEMIN ---
+# Force le script à s'exécuter à la racine du dépôt pour trouver le dossier data/
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) 
 
-  console.log("Le moteur démarre.");
+# --- CONFIGURATION DES FICHIERS ---
+# Le script va sauvegarder les données ici
+OUTPUT_FILE = "data/marine_data.geojson" 
+# URL de l'API de données marines (gardée comme référence)
+DATA_API_URL = "https://example.com/api/marine_data" 
 
-  // 1. Authentification
-  Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxNjc2NzE2Yi02NGQ4LTRhNDctOGZhMy1hMjllZmIwMzczMzgiLCJpZCI6MzUzMzgzLCJpYXQiOjE3NjE2NTY1ODV9.fIc9gO2PD8ziF7UcQa20JmCr_Bq8Agqm0iUvSwKqyZk'; 
-
-  try {
-    const viewer = new Cesium.Viewer('cesiumContainer', {
-      
-      // Configuration de la Bathymétrie 3D (Module 1)
-      terrainProvider: await Cesium.createWorldTerrainAsync({
-        requestWaterMask: true,     
-        requestVertexNormals: true  
-      }),
-      
-      // Widgets (interface épurée)
-      animation: false,
-      timeline: false,
-      geocoder: false,
-      homeButton: false,
-      sceneModePicker: false,
-      baseLayerPicker: false,
-      navigationHelpButton: false
-    });
-
-    // 2. Réglages de la Scène
-    viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
-    viewer.scene.skyAtmosphere.show = false;
-    viewer.scene.backgroundColor = Cesium.Color.BLACK;
-    
-    // -----------------------------------------------------
-    // 3. MODULE GPS IMMÉDIAT (Détection et Suivi) - (Module 6)
-    // -----------------------------------------------------
-
-    const monBateau = viewer.entities.add({
-      name: 'Mon Bateau',
-      position: Cesium.Cartesian3.fromDegrees(0, 0, 0),
-      point: {
-        pixelSize: 15,
-        color: Cesium.Color.RED, 
-        outlineColor: Cesium.Color.WHITE,
-        outlineWidth: 3
-      },
-      label: {
-          text: 'MON EPRSO', 
-          font: '14pt sans-serif',
-          fillColor: Cesium.Color.WHITE,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          outlineWidth: 2,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM
-      }
-    });
-
-    if (navigator.geolocation) {
-      console.log("Tentative de détection GPS...");
-      
-      navigator.geolocation.watchPosition(
-        function(position) {
-          const longitude = position.coords.longitude;
-          const latitude = position.coords.latitude;
-          const altitude = position.coords.altitude || 0;
-
-          monBateau.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude);
-
-          if (!viewer.trackedEntity) {
-            viewer.trackedEntity = monBateau;
-          }
-          
-        },
-        function(error) {
-          console.error("Erreur GPS - Permission refusée ou position non disponible. Message : " + error.message);
-          viewer.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(3, 45, 1500000) 
-          });
-        },
-        { enableHighAccuracy: true }
-      );
-
-    } else {
-      console.warn("Le GPS n'est pas supporté par votre PC.");
-    }
-    
-    // -----------------------------------------------------
-    // 4. MODULES 2, 3 & 5 : SST, CHLOROPHYLLE/PLANKTON & ZONES BIOLOGIQUES
-    // -----------------------------------------------------
-
-    // Charger le fichier GeoJSON créé par le Robot Collecteur (GitHub Action)
-    const marineDataSource = Cesium.GeoJsonDataSource.load('data/marine_data.geojson', {
-        clampToGround: true
-    });
-
-    viewer.dataSources.add(marineDataSource).then(function(dataSource) {
+def fetch_and_process_data():
+    try:
+        # --- SIMULATION DE DONNÉES CRÉDIBLES ---
+        # Si vous avez une URL API réelle, remplacez cette section.
+        # Sinon, ceci génère 3 points de données valides autour de la région de Marseille.
         
-        const entities = dataSource.entities.values;
+        features = []
+        base_coords = [5.37, 43.3] # Coordonnées de base (Marseille)
 
-        for (let i = 0; i < entities.length; i++) {
-            const entity = entities[i];
-            const props = entity.properties;
-            
-            // Assurez-vous que les propriétés existent avant de les lire
-            const temperature = props.temperature ? props.temperature.getValue() : 0;
-            const plankton_density = props.plankton_density ? props.plankton_density.getValue() : 0; 
-            
-            // Logique de zone favorable (Module 5)
-            // Ex: Température dans une bonne plage ET densité élevée
-            const isFavorable = (temperature >= 18 && temperature <= 20) || (plankton_density > 0.3);
-            
-            let pointColor = Cesium.Color.fromHsl(0.0, 0.0, 0.5); 
+        for i in range(3):
+            # Génère des coordonnées légèrement aléatoires pour simuler 3 points
+            lon = base_coords[0] + random.uniform(-0.1, 0.1)
+            lat = base_coords[1] + random.uniform(-0.1, 0.1)
 
-            if (isFavorable) {
-                // Couleur dynamique basée sur la densité du Plankton
-                const hue = 0.33 * (1 - Math.min(plankton_density * 3, 1)); 
-                pointColor = Cesium.Color.fromHsl(hue, 1.0, 0.5); 
-            } else {
-                 pointColor = Cesium.Color.GREY; 
+            feature = {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [lon, lat]
+              },
+              "properties": {
+                "sst": round(random.uniform(20.0, 24.0), 2), # Température (entre 20 et 24 C)
+                "chlorophyll": round(random.uniform(0.1, 1.5), 2), # Chlorophylle
+                "timestamp": datetime.now().isoformat(),
+                "id": i + 1
+              }
             }
-            
-            // Affichage des données (Module 3)
-            entity.point = {
-                pixelSize: 10,
-                color: pointColor,
-                outlineColor: Cesium.Color.BLACK,
-                outlineWidth: 1,
-            };
+            features.append(feature)
 
-            // Affichage des informations détaillées au survol 
-            entity.description = `
-                <p>Température (SST): <b>${temperature}°C</b></p>
-                <p>Densité Plankton: <b>${plankton_density}</b></p>
-                <p>Zone Biologique : <b>${isFavorable ? '✅ OUI' : '❌ NON'}</b></p>
-            `;
+        # Création du GeoJSON complet
+        final_geojson = {
+          "type": "FeatureCollection",
+          "metadata": {
+              "date_creation": datetime.now().isoformat(),
+              "nb_points": len(features),
+              "status": "SUCCES FINAL AVEC DONNEES"
+          },
+          "features": features
         }
         
-        console.log(`Données marines (SST/Plankton) chargées et affichées.`);
-    });
+        # --- 2. ENREGISTREMENT DU FICHIER ---
+        with open(OUTPUT_FILE, 'w') as f:
+            json.dump(final_geojson, f, indent=2)
+            
+        print("Opération de génération de données terminée avec succès.")
 
+    except Exception as e:
+        print(f"Erreur fatale lors de l'exécution du script: {e}")
+        raise
 
-  } catch (error) {
-    console.error("Échec du chargement du globe Cesium. Vérifiez votre clé Cesium ION.", error);
-  }
-
-})();
+if __name__ == "__main__":
+    fetch_and_process_data()
