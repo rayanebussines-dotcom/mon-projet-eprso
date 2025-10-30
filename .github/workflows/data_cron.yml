@@ -1,10 +1,8 @@
 name: 🌊 Daily Data Fetch
 
 on:
-  # Exécuter l'action tous les jours à minuit UTC
   schedule:
     - cron: '0 0 * * *' 
-  # Permet de lancer l'action manuellement depuis l'interface GitHub
   workflow_dispatch:
 
 jobs:
@@ -15,25 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Cloner l'historique complet pour permettre la poussée
           fetch-depth: 0 
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          
-      - name: Install dependencies
-        # Nous avons besoin de 'requests' pour l'API HTTP
-        run: pip install requests 
-
-      - name: Run data fetching script
-        # Exécute notre script Python
-        run: python scripts/fetch_data.py
+      - name: ⚡️ TEST ECRITURE DIRECTE
+        # Cette commande écrit directement un GeoJSON valide
+        run: |
+          mkdir -p data # Crée le dossier data si non existant
+          echo '{"type": "FeatureCollection", "metadata": {"status": "SUCCES TEST BASH"}, "features": []}' > data/marine_data.geojson
         
-      - name: Commit and Push new data
+      - name: Commit et Push (Si réussite)
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          # Publie le nouveau fichier GeoJSON (marine_data.geojson)
-          commit_message: '🤖 DECRET ROYAL: Mise à jour des données météo marine.'
+          commit_message: '🤖 DECRET ROYAL: TEST BASH REUSSI. Fichier créé.'
           files: 'data/marine_data.geojson'
