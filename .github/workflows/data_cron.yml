@@ -1,31 +1,31 @@
 name: 🌊 Daily Data Fetch
 
 on:
-  # Exécuter l'action tous les jours à minuit UTC
   schedule:
     - cron: '0 0 * * *' 
-  # Permet de lancer l'action manuellement depuis l'interface GitHub
   workflow_dispatch:
 
 jobs:
   fetch_and_publish:
     runs-on: ubuntu-latest
     
+    # AJOUT ESSENTIEL POUR LE COMMIT :
+    permissions:
+      contents: write
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Cloner l'historique complet pour permettre la poussée
           fetch-depth: 0 
 
-      - name: ⚡️ CRÉATION DU FICHIER (TEST ULTIME BASH)
-        # Cette commande écrit directement un GeoJSON valide dans le dossier data/
+      - name: ⚡️ CRÉATION DU FICHIER (TEST BASH)
         run: |
-          mkdir -p data # Crée le dossier data si non existant
-          echo '{"type": "FeatureCollection", "metadata": {"status": "SUCCES FINAL GARANTI"}, "features": []}' > data/marine_data.geojson
+          mkdir -p data 
+          echo '{"type": "FeatureCollection", "metadata": {"status": "SUCCES GARANTI"}, "features": []}' > data/marine_data.geojson
         
       - name: Commit et Push des données
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: '🤖 DECRET ROYAL: SUCCES FINAL. Fichier créé et robot fonctionnel.'
-          file_pattern: 'data/marine_data.geojson' # <-- CORRECTION DE SYNTAXE FINALE
+          commit_message: '🤖 DECRET ROYAL: SUCCES FINAL. Permission corrigée.'
+          file_pattern: 'data/marine_data.geojson'
