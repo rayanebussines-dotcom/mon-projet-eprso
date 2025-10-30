@@ -1,1 +1,8 @@
-{"type": "FeatureCollection", "metadata": {"status": "SUCCES GARANTI"}, "features": []}
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "date_genere": "2025-10-30T01:37:58.545545",
+    "status": "Test r\u00e9ussi"
+  },
+  "features": []
+}
